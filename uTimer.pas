@@ -13,6 +13,7 @@ type
     FInterval: Integer;
   protected
     procedure Execute; override;
+    procedure DoTimer;
   public
     constructor Create(Interval: Integer = 1);
     destructor Destroy; override;
@@ -38,16 +39,17 @@ begin
   inherited;
 end;
 
+procedure TTimerThread.DoTimer;
+begin
+  if Assigned(FOnTimer) then
+    FOnTimer(Self);
+end;
+
 procedure TTimerThread.Execute;
 begin
   while not Terminated do
-  begin
     if WaitForSingleObject(FEvent, FInterval) = WAIT_TIMEOUT then
-    begin
-      if Assigned(FOnTimer) then
-        FOnTimer(Self);
-    end;
-  end;
+      Synchronize(DoTimer);
 end;
 
 procedure TTimerThread.Finish;
